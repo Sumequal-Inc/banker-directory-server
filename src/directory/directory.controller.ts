@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, Query } from '@nestjs/common';
 import { DirectoryService } from './directory.service';
 import { CreateDirectoryDto } from './dto/create-directory.dto';
 import { UpdateDirectoryDto } from './dto/update-directory.dto';
@@ -13,8 +13,8 @@ export class DirectoryController {
   }
 
   @Get('get-directories')
-  findAll() {
-    return this.directoryService.findAll();
+  async findAll(@Query() searchParams: { currentInstitutionName?: string; experience?: string; sortBy?: string; sortOrder?: string }) {
+    return this.directoryService.findAll(searchParams);
   }
 
   @Get('get-directory/:id')
