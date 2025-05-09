@@ -4,25 +4,34 @@ import { Document } from 'mongoose';
 @Schema()
 export class Directory extends Document {
   @Prop()
-  bankName: string;
+  fullName: string;
 
   @Prop()
-  bankType: string;
+  currentInstitutionName: string; 
 
   @Prop()
-  address: string;
+  designation: string; 
 
   @Prop()
-  bicCode: string;
+  dateOfJoining: Date; 
+  @Prop()
+  totalExperience: string; 
 
   @Prop()
-  branchCode: string;
+  contact: string; 
+
+  @Prop({ unique: true })
+  email: string; 
 
   @Prop()
-  executive: string;
+  location: string;  
 
-  @Prop()
-  status: string;
+  @Prop({ required: false })
+  profileImage?: string;  
+
+  
+  @Prop([{ currentInstitutionName: String, role: String, startDate: Date, endDate: Date, description: String }])
+  previousExperience: { currentInstitutionName: string, role: string, startDate: Date, endDate: Date, description: string }[];
 }
 
 export const DirectorySchema = SchemaFactory.createForClass(Directory);

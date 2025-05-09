@@ -1,4 +1,49 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateDirectoryDto } from './create-directory.dto';
+import { IsOptional, IsString, IsDateString } from 'class-validator';
 
-export class UpdateDirectoryDto extends PartialType(CreateDirectoryDto) {}
+export class UpdateDirectoryDto {
+  @IsOptional()
+  @IsString()
+  fullName?: string;  
+
+  @IsOptional()
+  @IsString()
+  currentInstitutionName?: string;
+
+  @IsOptional()
+  @IsString()
+  designation?: string; 
+
+  @IsOptional()
+  @IsDateString()
+  dateOfJoining?: Date; 
+
+  @IsOptional()
+  @IsString()
+  totalExperience?: string; 
+
+  @IsOptional()
+  @IsString()
+  contact?: string;  
+
+  @IsOptional()
+  @IsString()
+  email?: string;  
+
+
+  @IsOptional()
+  @IsString()
+  location?: string; 
+
+  @IsOptional()
+  @IsString()
+  profileImage?: string; 
+
+  @IsOptional()
+  previousExperience?: { 
+    currentInstitutionName: string;
+    role: string;
+    startDate: Date;
+    endDate: Date;
+    description: string;
+  }[];  
+}
