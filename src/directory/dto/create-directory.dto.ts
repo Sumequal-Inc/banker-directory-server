@@ -5,31 +5,31 @@ export class CreateDirectoryDto {
   @IsString()
   fullName: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   currentInstitutionName: string;  
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   designation: string;  
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
   dateOfJoining: Date; 
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   totalExperience: string; 
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   contact: string; 
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   email: string;  
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   location: string; 
 
