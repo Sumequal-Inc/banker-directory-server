@@ -47,11 +47,11 @@ export class DirectoryService {
       throw new BadRequestException('Email already exists');
     }
 
-    const currentExperience = this.calculateCurrentExperience(dateOfJoining);
+    // const currentExperience = this.calculateCurrentExperience(dateOfJoining);
   
-    if (this.convertExperienceToMonths(totalExperience) < this.convertExperienceToMonths(currentExperience)) {
-      throw new BadRequestException('Total experience must be greater than or equal to current experience');
-    }
+    // if (this.convertExperienceToMonths(totalExperience) < this.convertExperienceToMonths(currentExperience)) {
+    //   throw new BadRequestException('Total experience must be greater than or equal to current experience');
+    // }
 
     const createdDirectory = new this.directoryModel(createDirectoryDto);
     return createdDirectory.save();
