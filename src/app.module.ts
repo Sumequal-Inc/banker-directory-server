@@ -7,7 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DirectoryService } from './directory/directory.service';
 import { DirectoryModule } from './directory/directory.module';
-
+import { LenderModule } from './lender/lender.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -15,6 +15,7 @@ import { DirectoryModule } from './directory/directory.module';
     UserModule,
     AuthModule,
     DirectoryModule,
+    LenderModule,
   ],
   controllers: [AppController],
   providers: [AppService],
