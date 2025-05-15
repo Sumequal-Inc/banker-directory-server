@@ -1,4 +1,3 @@
-// src/lender/lender.controller.ts
 import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { LenderService } from './lender.service';
 import { CreateLenderDto } from './dto/create-lender.dto';
