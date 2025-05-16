@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { BankerDirectory } from './schemas/banker-direc';
-import { CreateBankerDirectoryDto } from './dto/create-banker-directory.dto';
-import { UpdateBankerDirectoryDto } from './dto/update-banker-directory.dto';
+import { BankerDirectory } from './schemas/bank-directory.schema';
+import { CreateBankerDirectoryDto } from './dto/create-bank-directory.dto';
+import { UpdateBankerDirectoryDto } from './dto/update-bank-directory.dto';
 
 @Injectable()
 export class BankerDirectoryService {

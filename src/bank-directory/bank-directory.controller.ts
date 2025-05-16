@@ -1,23 +1,23 @@
 import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
-import { BankerDirectoryService } from './banker-directory.service';
-import { CreateBankerDirectoryDto } from './dto/create-banker-directory.dto';
-import { UpdateBankerDirectoryDto } from './dto/update-banker-directory.dto';
+import { BankerDirectoryService } from './bank-directory.service';
+import { CreateBankerDirectoryDto } from './dto/create-bank-directory.dto';
+import { UpdateBankerDirectoryDto } from './dto/update-bank-directory.dto';
 
-@Controller('bankers')
+@Controller('banker-directory')
 export class BankerDirectoryController {
   constructor(private readonly bankerDirectoryService: BankerDirectoryService) {}
 
-  @Post('create')
+  @Post('create-directories')
   async create(@Body() createBankerDirectoryDto: CreateBankerDirectoryDto) {
     return await this.bankerDirectoryService.create(createBankerDirectoryDto);
   }
 
-  @Get()
+  @Get('get-directories')
   async findAll() {
     return await this.bankerDirectoryService.findAll();
   }
 
-  @Get(':id')
+  @Get('get-directory/:id')
   async findOne(@Param('id') id: string) {
     return await this.bankerDirectoryService.findOne(id);
   }
@@ -30,7 +30,7 @@ export class BankerDirectoryController {
     return await this.bankerDirectoryService.update(id, updateBankerDirectoryDto);
   }
 
-  @Delete('delete/:id')
+  @Delete('delete-directory/:id')
   async remove(@Param('id') id: string) {
     return await this.bankerDirectoryService.remove(id);
   }
