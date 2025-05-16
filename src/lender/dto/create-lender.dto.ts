@@ -9,9 +9,6 @@ export class CreateLenderDto {
   @IsString()
   location: string;
 
-  @IsOptional()
-  @IsString()
-   managerName: string;
 
  
 }

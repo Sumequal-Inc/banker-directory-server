@@ -14,9 +14,7 @@ export class Lender {
   @Prop({ required: true })
   city: string;
 
-  @Prop({ required: true })
-  managerName: string;
-
+ 
   @Prop({ required: true })
   bankerName: string;
 

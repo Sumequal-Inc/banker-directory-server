@@ -1,42 +1,41 @@
-import { IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsDateString } from 'class-validator';
 
-export class UpdateDirectoryDto {
-  @IsOptional()
+export class createBankerProfileDto {
+  @IsNotEmpty()
   @IsString()
-  fullName?: string;  
-
-  @IsOptional()
-  @IsString()
-  currentInstitutionName?: string;
+  fullName: string;
 
   @IsOptional()
   @IsString()
-  designation?: string; 
+  currentInstitutionName: string;  
+
+  @IsOptional()
+  @IsString()
+  designation: string;  
 
   @IsOptional()
   @IsDateString()
-  dateOfJoining?: Date; 
+  dateOfJoining: Date; 
 
   @IsOptional()
   @IsString()
-  totalExperience?: string; 
+  totalExperience: string; 
 
   @IsOptional()
   @IsString()
-  contact?: string;  
+  contact: string; 
 
   @IsOptional()
   @IsString()
-  email?: string;  
-
-
-  @IsOptional()
-  @IsString()
-  location?: string; 
+  email: string;  
 
   @IsOptional()
   @IsString()
-  profileImage?: string; 
+  location: string; 
+
+  @IsOptional()
+  @IsString()
+  profileImage?: string;  
 
   @IsOptional()
   previousExperience?: { 
