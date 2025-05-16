@@ -5,17 +5,19 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DirectoryService } from './directory/directory.service';
-import { DirectoryModule } from './directory/directory.module';
+import { BankerService } from './banker-profile/banker.service';
+import { BankerModule } from './banker-profile/banker.module';
 import { LenderModule } from './lender/lender.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGO_URI || ''),
     UserModule,
     AuthModule,
-    DirectoryModule,
+    BankerModule,
     LenderModule,
+ 
   ],
   controllers: [AppController],
   providers: [AppService],
