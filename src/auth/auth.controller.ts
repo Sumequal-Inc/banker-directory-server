@@ -23,8 +23,8 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() createDto: CreateUserDto): Promise<{ access_token: string }> {
-    const { name,email, password, role } = createDto;
-    return this.authService.signup(name,email, password, role);
+    const { email, password, role } = createDto;
+    return this.authService.signup(email, password, role);
   }
 
   @Post('forgot-password')
