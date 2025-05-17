@@ -21,10 +21,12 @@ export class CreateBankerDirectoryDto {
   @IsEmail()
   emailPersonal?: string;
 
-  @IsPhoneNumber()
-  contact: string;
-
-  @IsNotEmpty()
+   @IsOptional()
   @IsString()
-  product: string;
+  contact: string; 
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  product?: string[];
 }

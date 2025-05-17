@@ -18,11 +18,12 @@ export class BankerDirectory extends Document {
   @Prop({ required: false })
   emailPersonal?: string;
 
-  @Prop({ required: true })
+  @Prop({required:false})
   contact: string;
 
-  @Prop({ required: true })
-  product: string;
+  @Prop({ type: [String] })
+  product?: string[];
+
 }
 
 export const BankerDirectorySchema = SchemaFactory.createForClass(BankerDirectory);

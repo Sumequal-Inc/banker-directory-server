@@ -48,4 +48,9 @@ export class BankerDirectoryService {
     }
     return deletedBankerDirectory;
   }
+
+  async findByLocation(location: string): Promise<BankerDirectory[]> {
+  return await this.bankerDirectoryModel.find({ locationCategories: location }).exec();
+}
+
 }
