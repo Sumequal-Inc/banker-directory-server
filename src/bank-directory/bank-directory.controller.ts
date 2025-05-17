@@ -34,4 +34,10 @@ export class BankerDirectoryController {
   async remove(@Param('id') id: string) {
     return await this.bankerDirectoryService.remove(id);
   }
+
+  @Get('filter-by-location/:location')
+async findByLocation(@Param('location') location: string) {
+  return await this.bankerDirectoryService.findByLocation(location);
+}
+
 }
