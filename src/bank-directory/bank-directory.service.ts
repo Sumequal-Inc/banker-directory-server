@@ -49,8 +49,20 @@ export class BankerDirectoryService {
     return deletedBankerDirectory;
   }
 
-  async findByLocation(location: string): Promise<BankerDirectory[]> {
-  return await this.bankerDirectoryModel.find({ locationCategories: location }).exec();
+ async filterByLocationAndName(location?: string, bankerName?: string): Promise<BankerDirectory[]> {
+  const query: any = {};
+
+  if (location) {
+    
+    query.locationCategories = location;
+    query.locationCategories = { $regex: location, $options: 'i' };
+  }
+  if (bankerName) {
+    query.bankerName = new RegExp(bankerName, 'i');
+  }
+
+  return this.bankerDirectoryModel.find(query).exec();
 }
+
 
 }

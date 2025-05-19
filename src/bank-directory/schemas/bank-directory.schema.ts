@@ -3,27 +3,29 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class BankerDirectory extends Document {
-  @Prop({ required: true })
-  bankerName: string;
+  @Prop({ required: false })
+  bankerName?: string;
 
-  @Prop({ required: true })
-  associatedWith: string;
+  @Prop({ required: false })
+  associatedWith?: string;
 
-  @Prop({ type: [String], required: true })
-  locationCategories: string[];
+  @Prop({ type: [String], required: false })
+  locationCategories?: string[];
 
-  @Prop({ required: true, unique: true })
-  emailOfficial: string;
+  @Prop({ required: false })
+  emailOfficial?: string;
 
   @Prop({ required: false })
   emailPersonal?: string;
 
-  @Prop({required:false})
-  contact: string;
+  @Prop({ required: false })
+  contact?: string;
 
-  @Prop({ type: [String] })
+  @Prop({ type: [String], required: false })
   product?: string[];
 
+  @Prop({ required: false })
+  lastCurrentDesignation?: string;
 }
 
 export const BankerDirectorySchema = SchemaFactory.createForClass(BankerDirectory);

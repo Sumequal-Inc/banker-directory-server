@@ -31,4 +31,33 @@ export class LenderService {
   async remove(id: string): Promise<Lender | null> {
     return this.lenderModel.findByIdAndDelete(id).exec();
   }
+
+ async search(filters: {
+  state?: string;
+  city?: string;
+  lenderName?: string;
+}): Promise<Lender[]> {
+  const orConditions: any[] = [];
+
+  if (filters.state) {
+    orConditions.push({ state: new RegExp(filters.state, 'i') });
+  }
+
+  if (filters.city) {
+    orConditions.push({ city: new RegExp(filters.city, 'i') });
+  }
+
+  if (filters.lenderName) {
+    orConditions.push({ lenderName: new RegExp(filters.lenderName, 'i') });
+  }
+
+  // If no filter is passed, return all
+  if (orConditions.length === 0) {
+    return this.lenderModel.find().exec();
+  }
+
+  return this.lenderModel.find({ $or: orConditions }).exec();
+}
+
+
 }

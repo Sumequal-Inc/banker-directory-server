@@ -15,11 +15,11 @@ export class UpdateBankerDirectoryDto {
   locationCategories?: string[];
 
   @IsOptional()
-  @IsEmail()
+  @IsString()
   emailOfficial?: string;
 
   @IsOptional()
-  @IsEmail()
+  @IsString()
   emailPersonal?: string;
 
   @IsOptional()
