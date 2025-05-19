@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query } from '@nestjs/common';
 import { LenderService } from './lender.service';
 import { CreateLenderDto } from './dto/create-lender.dto';
 import { UpdateLenderDto } from './dto/update-lender.dto';
@@ -31,4 +31,15 @@ export class LenderController {
   remove(@Param('id') id: string) {
     return this.lenderService.remove(id);
   }
+
+@Get('search')
+search(
+  @Query('state') state?: string,
+  @Query('city') city?: string,
+  @Query('lenderName') lenderName?: string
+) {
+  return this.lenderService.search({ state, city, lenderName });
+}
+
+
 }
