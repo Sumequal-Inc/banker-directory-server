@@ -7,8 +7,8 @@ async function bootstrap() {
 
   // Enable CORS with specific options
   app.enableCors({
-    origin: 'http://localhost:3000', // Replace with your frontend's origin
-    credentials: true, // Allow credentials (e.g., cookies, authorization headers)
+     origin: 'https://f2fintechbanker-directory.netlify.app',
+    credentials: true,
   });
 
   app.useGlobalPipes(new ValidationPipe());
