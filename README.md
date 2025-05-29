@@ -106,3 +106,7 @@ PORT=3001
 # MONGO_URI=mongodb://localhost:27017/banker-directory
 # JWT_SECRET=banker-directory
 # CORS_ORIGIN=*
+
+frontend
+.env.local
+NEXT_PUBLIC_BACKEND_URL=https://localhost:3001
