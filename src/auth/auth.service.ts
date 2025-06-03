@@ -22,20 +22,33 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
-    const payload = { username: user.email, sub: user._id, role: user.role };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
-  }
+  // async login(user: any) {
+  //   const payload = { username: user.email, sub: user._id, role: user.role };
+  //   return {
+  //     access_token: this.jwtService.sign(payload),
+  //   };
+  // }
+async login(user: any) {
+  const payload = {
+    email: user.email,
+    sub: user._id,
+    role: user.role,
+    fullName: user.fullName  
+  };
+  return {
+    access_token: this.jwtService.sign(payload),
+  };
+}
 
-  async signup(email: string, password: string, role: 'admin' | 'user') {
-    const userExists = await this.userService.findByEmail(email);
-    if (userExists) throw new BadRequestException('User already exists');
-    const hash = await bcrypt.hash(password, 10);
-    const user = await this.userService.create({ email, password: hash, role });
-    return this.login(user);
-  }
+
+  async signup(email: string, password: string, role: 'admin' | 'user', fullName: string) {
+  const userExists = await this.userService.findByEmail(email);
+  if (userExists) throw new BadRequestException('User already exists');
+  
+  const hash = await bcrypt.hash(password, 10);
+  const user = await this.userService.create({ email, password: hash, role, fullName }); 
+  return this.login(user);
+}
 
   async sendResetPasswordEmail(email: string): Promise<string> {
     const user = await this.userService.findByEmail(email);
@@ -50,4 +63,8 @@ export class AuthService {
     user.password = await bcrypt.hash(dto.password, 10);
     await user.save();
   }
+  async getProfileByEmail(email: string) {
+  return this.userService.findByEmail(email);
+}
+
 }
