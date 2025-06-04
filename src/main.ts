@@ -7,10 +7,9 @@ async function bootstrap() {
 
   // Enable CORS with specific options
   app.enableCors({
-
-    origin: 'http://localhost:3000', 
-    
-     method:'*',
+     origin: 'https://f2fintechbanker-directory.netlify.app',
+     
+    method:'*',
     credentials: true,
 
   });
@@ -22,3 +21,22 @@ async function bootstrap() {
   console.log(`🚀 Server running on http://localhost:${port}`);
 }
 bootstrap();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
