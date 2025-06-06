@@ -8,6 +8,7 @@ export class BankerDirectoryController {
   constructor(private readonly bankerDirectoryService: BankerDirectoryService) {}
 
   @Post('create-directories')
+  
   async create(@Body() createBankerDirectoryDto: CreateBankerDirectoryDto) {
     return await this.bankerDirectoryService.create(createBankerDirectoryDto);
   }
@@ -39,7 +40,8 @@ export class BankerDirectoryController {
 async filter(
   @Query('location') location?: string,
   @Query('bankerName') bankerName?: string,
+  @Query('associatedWith') associatedWith?:string,
 ) {
-  return await this.bankerDirectoryService.filterByLocationAndName(location, bankerName);
+  return await this.bankerDirectoryService.filterByLocationAndName(location, bankerName,associatedWith);
 }
 }
