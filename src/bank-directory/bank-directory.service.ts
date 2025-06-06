@@ -49,7 +49,7 @@ export class BankerDirectoryService {
     return deletedBankerDirectory;
   }
 
- async filterByLocationAndName(location?: string, bankerName?: string): Promise<BankerDirectory[]> {
+ async filterByLocationAndName(location?: string, bankerName?: string,associatedWith?:string): Promise<BankerDirectory[]> {
   const query: any = {};
 
   if (location) {
@@ -59,6 +59,10 @@ export class BankerDirectoryService {
   }
   if (bankerName) {
     query.bankerName = new RegExp(bankerName, 'i');
+  }
+
+   if (associatedWith) {
+    query.associatedWith = new RegExp(associatedWith, 'i');
   }
 
   return this.bankerDirectoryModel.find(query).exec();
