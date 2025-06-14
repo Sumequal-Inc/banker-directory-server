@@ -25,10 +25,6 @@ export class UserService {
     return this.userModel.find();
   }
 
-  // async findById(id: string): Promise<User | null> {
-  //   return this.userModel.findById(id);
-  // }
-
   async update(id: string, data: Partial<UpdateUserDto>): Promise<User> {
     // Only hash the password if it's provided in update
     if (data.password) {
