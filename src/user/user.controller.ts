@@ -18,13 +18,13 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findById(@Param('id') id: string) {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid user ID');
-    }
-    return this.userService.findById(id);
-  }
+  // @Get(':id')
+  // findById(@Param('id') id: string) {
+  //   if (!mongoose.Types.ObjectId.isValid(id)) {
+  //     throw new BadRequestException('Invalid user ID');
+  //   }
+  //   return this.userService.findById(id);
+  // }
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateDto: UpdateUserDto) {
