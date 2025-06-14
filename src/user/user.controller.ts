@@ -18,15 +18,7 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  // @Get(':id')
-  // findById(@Param('id') id: string) {
-  //   if (!mongoose.Types.ObjectId.isValid(id)) {
-  //     throw new BadRequestException('Invalid user ID');
-  //   }
-  //   return this.userService.findById(id);
-  // }
-
-  @Put(':id')
+  @Put('update-users/:id')
   update(@Param('id') id: string, @Body() updateDto: UpdateUserDto) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid user ID');
@@ -34,7 +26,7 @@ export class UserController {
     return this.userService.update(id, updateDto);
   }
 
-  @Delete(':id')
+  @Delete('delete-users/:id')
   delete(@Param('id') id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid user ID');
