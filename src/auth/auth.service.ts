@@ -1,4 +1,3 @@
-// src/auth/auth.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -40,15 +39,29 @@ async login(user: any) {
   };
 }
 
-
-  async signup(email: string, password: string, role: 'admin' | 'user', fullName: string) {
+async signup(
+  email: string,
+  password: string,
+  role: 'admin' | 'user',
+  fullName: string,
+  gender?: 'male' | 'female' | 'other' 
+) {
   const userExists = await this.userService.findByEmail(email);
   if (userExists) throw new BadRequestException('User already exists');
-  
-  const hash = await bcrypt.hash(password, 10);
-  const user = await this.userService.create({ email, password: hash, role, fullName }); 
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await this.userService.create({
+    email,
+    password: hashedPassword,
+    role,
+    fullName,
+    ...(gender && { gender })
+  });
+
   return this.login(user);
 }
+
+
 
   async sendResetPasswordEmail(email: string): Promise<string> {
     const user = await this.userService.findByEmail(email);

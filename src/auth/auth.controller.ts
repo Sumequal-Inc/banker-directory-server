@@ -23,13 +23,11 @@ export class AuthController {
     return this.authService.login(result);
   }
 
-
 @Post('signup')
 async signup(@Body() createDto: CreateUserDto): Promise<{ access_token: string }> {
-  const { email, password, role, fullName } = createDto;
-  return this.authService.signup(email, password, role, fullName);
+  const { email, password, role, fullName,gender } = createDto;
+  return this.authService.signup(email, password, role, fullName,gender);
 }
-
 
   @Post('forgot-password')
   async forgotPassword(@Body('email') email: string): Promise<{ message: string }> {
