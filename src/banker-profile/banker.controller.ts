@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
 import { BankerService } from './banker.service';
 import { createBankerProfileDto } from './dto/create-banker.dto';
 import { UpdateBankerProfileDtoyDto } from './dto/update-banker.dto';
@@ -30,7 +30,7 @@ export class BankerController {
     return this.bankerService.findOne(id);
   }
 
-  @Patch('update/:id')
+  @Put('update-bankers/:id')
   update(
     @Param('id') id: string,
     @Body() updateBankerDto: UpdateBankerProfileDtoyDto,
@@ -38,7 +38,7 @@ export class BankerController {
     return this.bankerService.update(id, updateBankerDto);
   }
 
-  @Delete('delete/:id')
+  @Delete('delete-bankers/:id')
   remove(@Param('id') id: string) {
     return this.bankerService.remove(id);
   }

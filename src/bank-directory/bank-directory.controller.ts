@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, Query, Put } from '@nestjs/common';
 import { BankerDirectoryService } from './bank-directory.service';
 import { CreateBankerDirectoryDto } from './dto/create-bank-directory.dto';
 import { UpdateBankerDirectoryDto } from './dto/update-bank-directory.dto';
@@ -23,7 +23,7 @@ export class BankerDirectoryController {
     return await this.bankerDirectoryService.findOne(id);
   }
 
-  @Patch('update/:id')
+  @Put('update-directory/:id')
   async update(
     @Param('id') id: string,
     @Body() updateBankerDirectoryDto: UpdateBankerDirectoryDto,

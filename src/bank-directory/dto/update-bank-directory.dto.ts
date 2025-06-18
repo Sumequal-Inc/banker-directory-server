@@ -23,10 +23,9 @@ export class UpdateBankerDirectoryDto {
   emailPersonal?: string;
 
   @IsOptional()
-  @IsPhoneNumber()
+ 
   contact?: string;
 
   @IsOptional()
-  @IsString()
   product?: string;
 }
