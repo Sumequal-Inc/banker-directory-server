@@ -23,7 +23,6 @@ export class UpdateBankerDirectoryDto {
   emailPersonal?: string;
 
   @IsOptional()
- 
   contact?: string;
 
   @IsOptional()

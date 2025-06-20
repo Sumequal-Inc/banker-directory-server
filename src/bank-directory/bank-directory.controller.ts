@@ -40,8 +40,11 @@ export class BankerDirectoryController {
 async filter(
   @Query('location') location?: string,
   @Query('bankerName') bankerName?: string,
+  @Query('emailOfficial') emailOfficial?:string,
+
+@Query('emailPersonal') emailPersonal?:string,
   @Query('associatedWith') associatedWith?:string,
 ) {
-  return await this.bankerDirectoryService.filterByLocationAndName(location, bankerName,associatedWith);
+  return await this.bankerDirectoryService.filterByLocationAndName(location, bankerName,associatedWith,emailOfficial,emailPersonal);
 }
 }
