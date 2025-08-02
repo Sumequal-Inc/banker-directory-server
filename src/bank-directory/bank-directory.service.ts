@@ -4,22 +4,69 @@ import { Model } from 'mongoose';
 import { BankerDirectory } from './schemas/bank-directory.schema';
 import { CreateBankerDirectoryDto } from './dto/create-bank-directory.dto';
 import { UpdateBankerDirectoryDto } from './dto/update-bank-directory.dto';
+import { BankerDirectoryReview } from './schemas/banker_directory_review.schema';
 
 @Injectable()
 export class BankerDirectoryService {
   constructor(
-    @InjectModel(BankerDirectory.name) private readonly bankerDirectoryModel: Model<BankerDirectory>,
+    @InjectModel(BankerDirectory.name)
+    private readonly bankerDirectoryModel: Model<BankerDirectory>,
+
+    @InjectModel(BankerDirectoryReview.name)
+    private readonly reviewModel: Model<BankerDirectoryReview>,
   ) {}
 
+  // ✅ 1. Public submits for review
+  async requestReview(createDto: CreateBankerDirectoryDto) {
+    return this.reviewModel.create({ ...createDto, status: 'pending' });
+  }
+
+  // ✅ 2. Admin views all pending submissions
+async getAllReviews() {
+  return this.reviewModel.find().sort({ createdAt: -1 }).exec(); // optional sort
+}
+
+
+  // ✅ 3. Admin approves a request (moves to main table)
+async approveReview(id: string) {
+  const review = await this.reviewModel.findById(id);
+  if (!review) throw new NotFoundException('Review not found');
+
+  const { _id, ...rest } = review.toObject(); // remove MongoDB _id
+  const approved = await this.bankerDirectoryModel.create(rest);
+
+  await this.reviewModel.findByIdAndUpdate(id, { status: 'approved' });
+
+  return approved;
+}
+
+
+async rejectReview(id: string, reason: string) {
+  const review = await this.reviewModel.findById(id);
+  if (!review) {
+    throw new NotFoundException('Review not found');
+  }
+
+  review.status = 'rejected';
+  review.rejectionReason = reason;
+  await review.save();
+
+  return { message: 'Submission rejected successfully', reason };
+}
+
+
+  // ✅ 5. Main table: Create manually (not used by public)
   async create(createBankerDirectoryDto: CreateBankerDirectoryDto): Promise<BankerDirectory> {
     const createdBankerDirectory = new this.bankerDirectoryModel(createBankerDirectoryDto);
     return await createdBankerDirectory.save();
   }
 
+  // ✅ 6. Get all approved banker entries
   async findAll(): Promise<BankerDirectory[]> {
     return await this.bankerDirectoryModel.find().exec();
   }
 
+  // ✅ 7. Get by ID
   async findOne(id: string): Promise<BankerDirectory> {
     const bankerDirectory = await this.bankerDirectoryModel.findById(id).exec();
     if (!bankerDirectory) {
@@ -28,6 +75,7 @@ export class BankerDirectoryService {
     return bankerDirectory;
   }
 
+  // ✅ 8. Update approved record
   async update(
     id: string,
     updateBankerDirectoryDto: UpdateBankerDirectoryDto,
@@ -41,6 +89,7 @@ export class BankerDirectoryService {
     return updatedBankerDirectory;
   }
 
+  // ✅ 9. Delete approved record
   async remove(id: string): Promise<BankerDirectory> {
     const deletedBankerDirectory = await this.bankerDirectoryModel.findByIdAndDelete(id).exec();
     if (!deletedBankerDirectory) {
@@ -49,30 +98,36 @@ export class BankerDirectoryService {
     return deletedBankerDirectory;
   }
 
- async filterByLocationAndName(location?: string, bankerName?: string,associatedWith?:string,emailOfficial?:string,emailPersonal?:string): Promise<BankerDirectory[]> {
-  const query: any = {};
+  // ✅ 10. Filtering (by location, name, email, etc.)
+  async filterByLocationAndName(
+    location?: string,
+    bankerName?: string,
+    associatedWith?: string,
+    emailOfficial?: string,
+    emailPersonal?: string,
+  ): Promise<BankerDirectory[]> {
+    const query: any = {};
 
-  if (location) {
-    
-    query.locationCategories = location;
-    query.locationCategories = { $regex: location, $options: 'i' };
-  }
-  if (bankerName) {
-    query.bankerName = new RegExp(bankerName, 'i');
-  }
+    if (location) {
+      query.locationCategories = { $regex: location, $options: 'i' };
+    }
 
-   if (associatedWith) {
-    query.associatedWith = new RegExp(associatedWith, 'i');
-  }
-  if(emailOfficial){
-     query.emailOfficial = new RegExp(emailOfficial, 'i');
-  }
-  
-if(emailPersonal){
-     query.emailPersonal = new RegExp(emailPersonal, 'i');
-  }
-  return this.bankerDirectoryModel.find(query).exec();
-}
+    if (bankerName) {
+      query.bankerName = new RegExp(bankerName, 'i');
+    }
 
+    if (associatedWith) {
+      query.associatedWith = new RegExp(associatedWith, 'i');
+    }
 
+    if (emailOfficial) {
+      query.emailOfficial = new RegExp(emailOfficial, 'i');
+    }
+
+    if (emailPersonal) {
+      query.emailPersonal = new RegExp(emailPersonal, 'i');
+    }
+
+    return this.bankerDirectoryModel.find(query).exec();
+  }
 }
