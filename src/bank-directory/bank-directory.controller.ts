@@ -75,20 +75,25 @@ async reject(
     return await this.bankerDirectoryService.remove(id);
   }
 
-  @Get('filter')
-  async filter(
-    @Query('location') location?: string,
-    @Query('bankerName') bankerName?: string,
-    @Query('emailOfficial') emailOfficial?: string,
-    @Query('emailPersonal') emailPersonal?: string,
-    @Query('associatedWith') associatedWith?: string,
-  ) {
-    return await this.bankerDirectoryService.filterByLocationAndName(
-      location,
-      bankerName,
-      associatedWith,
-      emailOfficial,
-      emailPersonal,
-    );
-  }
+@Get('filter')
+async filter(
+  @Query('location') location?: string,
+  @Query('bankerName') bankerName?: string,
+  @Query('emailOfficial') emailOfficial?: string,
+  @Query('emailPersonal') emailPersonal?: string,
+  @Query('associatedWith') associatedWith?: string,
+  @Query('page') page: number = 1,
+  @Query('limit') limit: number = 10
+) {
+  return await this.bankerDirectoryService.filterByLocationAndName(
+    location,
+    bankerName,
+    associatedWith,
+    emailOfficial,
+    emailPersonal,
+    +page,
+    +limit
+  );
+}
+
 }

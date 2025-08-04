@@ -99,35 +99,45 @@ async rejectReview(id: string, reason: string) {
   }
 
   // ✅ 10. Filtering (by location, name, email, etc.)
-  async filterByLocationAndName(
-    location?: string,
-    bankerName?: string,
-    associatedWith?: string,
-    emailOfficial?: string,
-    emailPersonal?: string,
-  ): Promise<BankerDirectory[]> {
-    const query: any = {};
+async filterByLocationAndName(
+  location?: string,
+  bankerName?: string,
+  associatedWith?: string,
+  emailOfficial?: string,
+  emailPersonal?: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ data: BankerDirectory[]; totalCount: number }> {
+  const query: any = {};
 
-    if (location) {
-      query.locationCategories = { $regex: location, $options: 'i' };
-    }
-
-    if (bankerName) {
-      query.bankerName = new RegExp(bankerName, 'i');
-    }
-
-    if (associatedWith) {
-      query.associatedWith = new RegExp(associatedWith, 'i');
-    }
-
-    if (emailOfficial) {
-      query.emailOfficial = new RegExp(emailOfficial, 'i');
-    }
-
-    if (emailPersonal) {
-      query.emailPersonal = new RegExp(emailPersonal, 'i');
-    }
-
-    return this.bankerDirectoryModel.find(query).exec();
+  if (location) {
+    query.locationCategories = { $regex: location, $options: 'i' };
   }
+
+  if (bankerName) {
+    query.bankerName = new RegExp(bankerName, 'i');
+  }
+
+  if (associatedWith) {
+    query.associatedWith = new RegExp(associatedWith, 'i');
+  }
+
+  if (emailOfficial) {
+    query.emailOfficial = new RegExp(emailOfficial, 'i');
+  }
+
+  if (emailPersonal) {
+    query.emailPersonal = new RegExp(emailPersonal, 'i');
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [data, totalCount] = await Promise.all([
+    this.bankerDirectoryModel.find(query).skip(skip).limit(limit).exec(),
+    this.bankerDirectoryModel.countDocuments(query)
+  ]);
+
+  return { data, totalCount };
+}
+
 }
