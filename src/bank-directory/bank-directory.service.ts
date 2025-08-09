@@ -140,4 +140,15 @@ async filterByLocationAndName(
   return { data, totalCount };
 }
 
+async getReviewCounts() {
+  const [pending, approved, rejected] = await Promise.all([
+    this.reviewModel.countDocuments({ status: 'pending' }),
+    this.reviewModel.countDocuments({ status: 'approved' }),
+    this.reviewModel.countDocuments({ status: 'rejected' })
+  ]);
+
+  return { pending, approved, rejected };
+}
+
+
 }
