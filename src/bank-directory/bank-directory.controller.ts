@@ -24,6 +24,12 @@ export class BankerDirectoryController {
     return await this.bankerDirectoryService.requestReview(dto);
   }
 
+  @Get('review-counts')
+async getReviewCounts() {
+  return await this.bankerDirectoryService.getReviewCounts();
+}
+
+
 // ✅ Admin: Get all review submissions (pending, approved, rejected)
 @Get('review-requests')
 async getAllSubmissions() {
