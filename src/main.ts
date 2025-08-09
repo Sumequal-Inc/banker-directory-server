@@ -7,7 +7,7 @@ async function bootstrap() {
 
   // Enable CORS with specific options
   app.enableCors({
-     origin: 'https://f2fintechbanker-directory.netlify.app',
+     origin: 'https://connectbankers.com',
      
     method:'*',
     credentials: true,
