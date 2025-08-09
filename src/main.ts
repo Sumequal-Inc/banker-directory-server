@@ -4,13 +4,13 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   // Enable CORS with specific options
   app.enableCors({
-
-    origin: 'http://localhost:3000', 
-    credentials: true,
+     origin: 'https://f2fintechbanker-directory.netlify.app',
+     
     method:'*',
-    
+    credentials: true,
 
   });
 
@@ -21,4 +21,13 @@ async function bootstrap() {
   console.log(`🚀 Server running on http://localhost:${port}`);
 }
 bootstrap();
+
+
+
+
+
+
+
+
+
 
