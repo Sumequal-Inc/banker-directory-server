@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
 import { BankerService } from './banker.service';
 import { createBankerProfileDto } from './dto/create-banker.dto';
-import { UpdateBankerProfileDtoyDto } from './dto/update-banker.dto';
+import { UpdateBankerProfileDto } from './dto/update-banker.dto';
 
 @Controller('bankers')
 export class BankerController {
@@ -33,7 +33,7 @@ export class BankerController {
   @Put('update-bankers/:id')
   update(
     @Param('id') id: string,
-    @Body() updateBankerDto: UpdateBankerProfileDtoyDto,
+    @Body() updateBankerDto: UpdateBankerProfileDto,
   ) {
     return this.bankerService.update(id, updateBankerDto);
   }
