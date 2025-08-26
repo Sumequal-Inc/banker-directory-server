@@ -7,10 +7,14 @@ import {
   Delete,
   Put,
   Query,
+  BadRequestException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { BankerDirectoryService } from './bank-directory.service';
 import { CreateBankerDirectoryDto } from './dto/create-bank-directory.dto';
 import { UpdateBankerDirectoryDto } from './dto/update-bank-directory.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('banker-directory')
 export class BankerDirectoryController {
@@ -101,5 +105,12 @@ async filter(
     +limit
   );
 }
+
+  @Post('bulk-upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async bulkUpload(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('File is required');
+    return this.bankerDirectoryService.bulkImportFromBuffer(file.buffer, file.originalname);
+  }
 
 }

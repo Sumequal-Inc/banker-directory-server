@@ -1,49 +1,15 @@
-import { IsOptional, IsString, IsDateString } from 'class-validator';
+// src/bankers/dto/update-banker.dto.ts
+import { IsOptional, IsString, IsEmail } from 'class-validator';
 
-export class UpdateBankerProfileDtoyDto {
-  @IsOptional()
-  @IsString()
-  fullName?: string;  
-
-  @IsOptional()
-  @IsString()
-  currentInstitutionName?: string;
-
-  @IsOptional()
-  @IsString()
-  designation?: string; 
-
-  @IsOptional()
-  @IsDateString()
-  dateOfJoining?: Date; 
-
-  @IsOptional()
-  @IsString()
-  totalExperience?: string; 
-
-  @IsOptional()
-  @IsString()
-  contact?: string;  
-
-  @IsOptional()
-  @IsString()
-  email?: string;  
-
-
-  @IsOptional()
-  @IsString()
-  location?: string; 
-
-  @IsOptional()
-  @IsString()
-  profileImage?: string; 
-
-  @IsOptional()
-  previousExperience?: { 
-    currentInstitutionName: string;
-    role: string;
-    startDate: Date;
-    endDate: Date;
-    description: string;
-  }[];  
+export class UpdateBankerProfileDto {
+  @IsOptional() @IsString() fullName?: string;
+  @IsOptional() @IsString() profileImage?: string;
+  @IsOptional() @IsString() designation?: string;
+  @IsOptional() @IsString() currentInstitutionName?: string;
+  @IsOptional() @IsString() dateOfJoining?: string;
+  @IsOptional() @IsString() totalExperience?: string;
+  @IsOptional() @IsString() contact?: string;
+  @IsOptional() @IsEmail() email?: string;
+  @IsOptional() @IsString() location?: string;
+  @IsOptional() @IsString() bankName?: string;
 }
