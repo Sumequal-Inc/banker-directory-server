@@ -9,6 +9,7 @@ import { BankerService } from './banker-profile/banker.service';
 import { BankerModule } from './banker-profile/banker.module';
 import { LenderModule } from './lender/lender.module';
 import { BankDirectoryModule } from './bank-directory/bank-directory.module';
+import { BrokerDirectoryModule } from './broker-directory/broker-directory.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { BankDirectoryModule } from './bank-directory/bank-directory.module';
     AuthModule,
     BankerModule,
     LenderModule,
-    BankDirectoryModule
+    BankDirectoryModule,
+    BrokerDirectoryModule
  
   ],
   controllers: [AppController],
