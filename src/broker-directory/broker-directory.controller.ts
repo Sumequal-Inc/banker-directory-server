@@ -26,7 +26,7 @@ export class BrokerDirectoryController {
   @Get('filter')
   async filter(
     @Query('brokerName') brokerName?: string,
-    @Query('fullName') fullName?: string,        // legacy
+    @Query('fullName') fullName?: string,      
     @Query('agencyName') agencyName?: string,
     @Query('city') city?: string,
     @Query('email') email?: string,

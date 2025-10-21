@@ -4,21 +4,28 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // Enable CORS with specific options
+
   app.enableCors({
-
-     origin: 'https://connectbankers.com',
+    origin: [
+      'https://connectbankers.com',
+      'https://brokerf2.netlify.app',
+     
+    ],
+    methods: '*',
     credentials: true,
-    method:'*',
-    
-
   });
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
 
-  const port = process.env.PORT || 4000;
-  await app.listen(port);
+  const port = process.env.PORT || 3001;
+  await app.listen(port as number);
   console.log(`🚀 Server running on http://localhost:${port}`);
 }
 bootstrap();
-
