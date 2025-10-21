@@ -12,7 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(loginDto: LoginDto) {
+ async validateUser(loginDto: LoginDto) {
     const user = await this.userService.findByEmail(loginDto.email);
     if (user && await bcrypt.compare(loginDto.password, user.password)) {
       const { password, ...result } = user.toObject();
@@ -20,48 +20,38 @@ export class AuthService {
     }
     return null;
   }
+  async login(user: any) {
+    const id = user._id ?? user.id;
+    const payload = {
+      email: user.email,
+      sub: String(id),
+      role: user.role,
+      fullName: user.fullName,
+    };
+    return { access_token: this.jwtService.sign(payload) };
+  }
 
-  // async login(user: any) {
-  //   const payload = { username: user.email, sub: user._id, role: user.role };
-  //   return {
-  //     access_token: this.jwtService.sign(payload),
-  //   };
-  // }
-async login(user: any) {
-  const payload = {
-    email: user.email,
-    sub: user._id,
-    role: user.role,
-    fullName: user.fullName  
-  };
-  return {
-    access_token: this.jwtService.sign(payload),
-  };
-}
+  // DO NOT hash here. Hash only inside UserService.create()
+  async signup(
+    email: string,
+    password: string,
+    role: 'admin' | 'user' | 'broker' | 'brokeradmin',
+    fullName: string,
+    gender?: 'male' | 'female' | 'other',
+  ) {
+    const userExists = await this.userService.findByEmail(email);
+    if (userExists) throw new BadRequestException('User already exists');
 
-async signup(
-  email: string,
-  password: string,
-  role: 'admin' | 'user',
-  fullName: string,
-  gender?: 'male' | 'female' | 'other' 
-) {
-  const userExists = await this.userService.findByEmail(email);
-  if (userExists) throw new BadRequestException('User already exists');
+ const hashedPassword = await bcrypt.hash(password, 10);    const user = await this.userService.create({
+      email,
+      password:hashedPassword, 
+      role,
+      fullName,
+      ...(gender && { gender }),
+    });
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await this.userService.create({
-    email,
-    password: hashedPassword,
-    role,
-    fullName,
-    ...(gender && { gender })
-  });
-
-  return this.login(user);
-}
-
-
+    return this.login(user);
+  }
 
   async sendResetPasswordEmail(email: string): Promise<string> {
     const user = await this.userService.findByEmail(email);
@@ -70,14 +60,14 @@ async signup(
   }
 
   async resetPassword(dto: ResetPasswordDto, token: string): Promise<void> {
-    if (!token) throw new BadRequestException('Token is missing'); 
+    if (!token) throw new BadRequestException('Token is missing');
     const user = await this.userService.findByEmail('test@example.com');
     if (!user) throw new BadRequestException('User not found');
     user.password = await bcrypt.hash(dto.password, 10);
     await user.save();
   }
-  async getProfileByEmail(email: string) {
-  return this.userService.findByEmail(email);
-}
 
+  async getProfileByEmail(email: string) {
+    return this.userService.findByEmail(email);
+  }
 }

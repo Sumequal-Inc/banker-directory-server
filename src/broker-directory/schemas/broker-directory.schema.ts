@@ -59,4 +59,5 @@ export class BrokerDirectory {
   facebookProfile?: string;
 }
 
-export const BrokerDirectorySchema = SchemaFactory.createForClass(BrokerDirectory);
+export const BrokerDirectorySchema =
+  SchemaFactory.createForClass(BrokerDirectory);
