@@ -9,7 +9,7 @@ async function bootstrap() {
     origin: [
       'https://connectbankers.com',
       'https://brokerf2.netlify.app',
-     
+       'http://localhost:3000'
     ],
     methods: '*',
     credentials: true,
