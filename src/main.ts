@@ -9,7 +9,7 @@ async function bootstrap() {
     origin: [
       'https://connectbankers.com',
       'https://brokerf2.netlify.app',
-       'http://localhost:3000'
+      'http://localhost:3000',
     ],
     methods: '*',
     credentials: true,
@@ -24,8 +24,11 @@ async function bootstrap() {
     }),
   );
 
-  const port = process.env.PORT || 3001;
-  await app.listen(port as number);
-  console.log(`🚀 Server running on http://localhost:${port}`);
+  // 🔴 IMPORTANT FOR RENDER
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`🚀 Server running on port ${port}`);
 }
+
 bootstrap();
