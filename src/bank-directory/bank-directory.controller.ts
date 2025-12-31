@@ -10,6 +10,7 @@ import {
   BadRequestException,
   UseInterceptors,
   UploadedFile,
+  Patch,
 } from '@nestjs/common';
 import { BankerDirectoryService } from './bank-directory.service';
 import { CreateBankerDirectoryDto } from './dto/create-bank-directory.dto';
@@ -71,40 +72,47 @@ async reject(
   async findOne(@Param('id') id: string) {
     return await this.bankerDirectoryService.findOne(id);
   }
+@Patch('update-directory/:id')
+async update(@Param('id') id: string, @Body() updateDto: UpdateBankerDirectoryDto) {
+  return this.bankerDirectoryService.update(id, updateDto);
+}
 
-  @Put('update-directory/:id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateDto: UpdateBankerDirectoryDto,
-  ) {
-    return await this.bankerDirectoryService.update(id, updateDto);
-  }
 
   @Delete('delete-directory/:id')
   async remove(@Param('id') id: string) {
     return await this.bankerDirectoryService.remove(id);
   }
-
 @Get('filter')
 async filter(
-  @Query('location') location?: string,
+  @Query('state') state?: string,
+  @Query('city') city?: string,
   @Query('bankerName') bankerName?: string,
   @Query('emailOfficial') emailOfficial?: string,
   @Query('emailPersonal') emailPersonal?: string,
   @Query('associatedWith') associatedWith?: string,
   @Query('page') page: number = 1,
-  @Query('limit') limit: number = 10
+  @Query('limit') limit: number = 10,
 ) {
   return await this.bankerDirectoryService.filterByLocationAndName(
-    location,
+    state,
+    city,
     bankerName,
     associatedWith,
     emailOfficial,
     emailPersonal,
     +page,
-    +limit
+    +limit,
   );
 }
+
+// bank-directory.controller.ts
+
+@Get('state-city-meta')
+async getStateCityMeta() {
+  return this.bankerDirectoryService.getStateCityMeta();
+}
+
+
 
   @Post('bulk-upload')
   @UseInterceptors(FileInterceptor('file'))

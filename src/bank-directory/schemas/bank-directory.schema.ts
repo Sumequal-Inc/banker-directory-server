@@ -10,7 +10,10 @@ export class BankerDirectory extends Document {
   associatedWith?: string;
 
   @Prop({ type: [String], required: false })
-  locationCategories?: string[];
+  state?: string[];
+  
+  @Prop({ type: [String], required: false })
+  city?: string[];
 
   @Prop({ required: false })
   emailOfficial?: string;

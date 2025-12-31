@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsArray, IsEmail } from 'class-validator';
+import { IsOptional, IsString, IsArray } from 'class-validator';
 
 export class CreateBankerDirectoryDto {
   @IsOptional()
@@ -10,9 +10,12 @@ export class CreateBankerDirectoryDto {
   associatedWith?: string;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  locationCategories?: string[];
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
 
   @IsOptional()
   @IsString()
