@@ -76,19 +76,12 @@ async rejectReview(id: string, reason: string) {
     return bankerDirectory;
   }
 
-  // ✅ 8. Update approved record
-  async update(
-    id: string,
-    updateBankerDirectoryDto: UpdateBankerDirectoryDto,
-  ): Promise<BankerDirectory> {
-    const updatedBankerDirectory = await this.bankerDirectoryModel
-      .findByIdAndUpdate(id, updateBankerDirectoryDto, { new: true })
-      .exec();
-    if (!updatedBankerDirectory) {
-      throw new NotFoundException(`Banker Directory with ID ${id} not found`);
-    }
-    return updatedBankerDirectory;
-  }
+ async update(id: string, updateBankerDirectoryDto: UpdateBankerDirectoryDto) {
+  return this.bankerDirectoryModel
+    .findByIdAndUpdate(id, updateBankerDirectoryDto, { new: true })
+    .exec();
+}
+
 
   // ✅ 9. Delete approved record
   async remove(id: string): Promise<BankerDirectory> {
@@ -99,20 +92,24 @@ async rejectReview(id: string, reason: string) {
     return deletedBankerDirectory;
   }
 
-  // ✅ 10. Filtering (by location, name, email, etc.)
 async filterByLocationAndName(
-  location?: string,
+  state?: string,
+  city?: string,
   bankerName?: string,
   associatedWith?: string,
   emailOfficial?: string,
   emailPersonal?: string,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<{ data: BankerDirectory[]; totalCount: number }> {
   const query: any = {};
 
-  if (location) {
-    query.locationCategories = { $regex: location, $options: 'i' };
+  if (state) {
+    query.state = { $regex: state, $options: 'i' };
+  }
+
+  if (city) {
+    query.city = { $regex: city, $options: 'i' };
   }
 
   if (bankerName) {
@@ -135,10 +132,45 @@ async filterByLocationAndName(
 
   const [data, totalCount] = await Promise.all([
     this.bankerDirectoryModel.find(query).skip(skip).limit(limit).exec(),
-    this.bankerDirectoryModel.countDocuments(query)
+    this.bankerDirectoryModel.countDocuments(query),
   ]);
 
   return { data, totalCount };
+}
+
+
+
+// bank-directory.service.ts
+
+async getStateCityMeta() {
+  // distinct states
+  const rawStates: string[] = await this.bankerDirectoryModel
+    .distinct('state')
+    .exec();
+
+  const states = (rawStates || [])
+    .filter(Boolean)
+    .map((s) => String(s).trim())
+    .filter((s) => s.length > 0)
+    .sort((a, b) => a.localeCompare(b));
+
+  const stateCityMap: Record<string, string[]> = {};
+
+  for (const st of states) {
+    const rawCities: string[] = await this.bankerDirectoryModel
+      .distinct('city', { state: st })
+      .exec();
+
+    const cities = (rawCities || [])
+      .filter(Boolean)
+      .map((c) => String(c).trim())
+      .filter((c) => c.length > 0)
+      .sort((a, b) => a.localeCompare(b));
+
+    stateCityMap[st] = cities;
+  }
+
+  return { states, stateCityMap };
 }
 
 async getReviewCounts() {
@@ -151,93 +183,97 @@ async getReviewCounts() {
   return { pending, approved, rejected };
 }
 
- async bulkImportFromBuffer(buf: Buffer, filename: string) {
-    let workbook: XLSX.WorkBook;
-    try {
-      workbook = XLSX.read(buf, { type: 'buffer' });
-    } catch {
-      throw new BadRequestException('Invalid file format');
-    }
-
-    const sheetName = workbook.SheetNames[0];
-    if (!sheetName) throw new BadRequestException('No worksheet found');
-
-    const sheet = workbook.Sheets[sheetName];
-    const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-
-    if (!rows.length) {
-      return { success: true, inserted: 0, updated: 0, skipped: 0, errors: [] };
-    }
-
-    const errors: { row: number; message: string }[] = [];
-    let inserted = 0;
-    let updated = 0;
-    let skipped = 0;
-
-    const toList = (v: any) =>
-      String(v ?? '')
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-    for (let i = 0; i < rows.length; i++) {
-      const r = rows[i];
-
-      // normalize
-      const bankerName = String(r.bankerName || '').trim();
-      const associatedWith = String(r.associatedWith || '').trim();
-      const emailOfficial = String(r.emailOfficial || '').trim();
-      const emailPersonal = String(r.emailPersonal || '').trim();
-      const contact = String(r.contact || '').trim();
-
-      const locationCategories = toList(r.locationCategories);
-      const product = toList(r.product);
-
-      // basic validation
-      if (!bankerName || !associatedWith) {
-        skipped++;
-        errors.push({
-          row: i + 2, // header + 1-based row
-          message: 'bankerName and associatedWith are required',
-        });
-        continue;
-      }
-
-      // upsert filter
-      const filter: any = emailOfficial
-        ? { emailOfficial }
-        : { bankerName, associatedWith, contact };
-
-      // DO NOT include any mongo meta fields
-      const payload = {
-        bankerName,
-        associatedWith,
-        emailOfficial,
-        emailPersonal,
-        contact,
-        locationCategories,
-        product,
-      };
-
-      try {
-        const res: any = await this.bankerDirectoryModel.updateOne(
-          filter,
-          { $set: payload },
-          { upsert: true },
-        );
-
-        if (res.upsertedCount > 0) inserted++;
-        else if (res.modifiedCount > 0) updated++;
-        else skipped++; // nothing changed
-      } catch (e: any) {
-        errors.push({
-          row: i + 2,
-          message: e?.message || 'Unknown DB error',
-        });
-      }
-    }
-
-    return { success: true, inserted, updated, skipped, errors };
+async bulkImportFromBuffer(buf: Buffer, filename: string) {
+  let workbook: XLSX.WorkBook;
+  try {
+    workbook = XLSX.read(buf, { type: 'buffer' });
+  } catch {
+    throw new BadRequestException('Invalid file format');
   }
+
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) throw new BadRequestException('No worksheet found');
+
+  const sheet = workbook.Sheets[sheetName];
+  const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+  if (!rows.length) {
+    return { success: true, inserted: 0, updated: 0, skipped: 0, errors: [] };
+  }
+
+  const errors: { row: number; message: string }[] = [];
+  let inserted = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  const toList = (v: any) =>
+    String(v ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+
+    // 🔹 Normalize (Excel ke column names se)
+    const bankerName = String(r.bankerName || r.BankerName || '').trim();
+    const associatedWith = String(r.associatedWith || r.AssociatedWith || '').trim();
+    const emailOfficial = String(r.emailOfficial || r.EmailOfficial || '').trim();
+    const emailPersonal = String(r.emailPersonal || r.EmailPersonal || '').trim();
+    const contact = String(r.contact || r.Contact || '').trim();
+
+    const state = String(r.state || r.State || '').trim();
+    const city = String(r.city || r.City || '').trim();
+
+    const product = toList(r.product || r.Product);
+
+    // basic validation
+    if (!bankerName || !associatedWith) {
+      skipped++;
+      errors.push({
+        row: i + 2, // header + 1-based row
+        message: 'bankerName and associatedWith are required',
+      });
+      continue;
+    }
+
+    // upsert filter
+    const filter: any = emailOfficial
+      ? { emailOfficial }
+      : { bankerName, associatedWith, contact };
+
+    // 👉 yahan ab state & city bhi save ho rahe hain
+    const payload = {
+      bankerName,
+      associatedWith,
+      emailOfficial,
+      emailPersonal,
+      contact,
+      state,
+      city,
+      product,
+    };
+
+    try {
+      const res: any = await this.bankerDirectoryModel.updateOne(
+        filter,
+        { $set: payload },
+        { upsert: true },
+      );
+
+      if (res.upsertedCount > 0) inserted++;
+      else if (res.modifiedCount > 0) updated++;
+      else skipped++; // nothing changed
+    } catch (e: any) {
+      errors.push({
+        row: i + 2,
+        message: e?.message || 'Unknown DB error',
+      });
+    }
+  }
+
+  return { success: true, inserted, updated, skipped, errors };
+}
+
 
 }
