@@ -29,6 +29,10 @@ export class CreateBankerDirectoryDto {
   @IsString()
   contact?: string;
 
+   @IsOptional()
+  @IsString()
+  lastCurrentDesignation?: string;
+  
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

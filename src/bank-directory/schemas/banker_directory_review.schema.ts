@@ -5,25 +5,42 @@ export type BankerDirectoryReviewDocument = BankerDirectoryReview & Document;
 
 @Schema({ timestamps: true })
 export class BankerDirectoryReview {
-  @Prop({ required: true }) bankerName: string;
+  @Prop()
+  bankerName?: string;
 
-  @Prop({ required: true }) associatedWith: string;
+  @Prop()
+  associatedWith?: string;
 
-  @Prop({ type: [String] }) locationCategories: string[];
+  // ✅ frontend se string aa rahi hai (e.g. "Delhi, Uttar Pradesh")
+  @Prop()
+  state?: string;
 
-  @Prop() emailOfficial?: string;
+  // ✅ frontend se string aa rahi hai (e.g. "Noida, Ghaziabad")
+  @Prop()
+  city?: string;
 
-  @Prop() emailPersonal?: string;
+  @Prop()
+  emailOfficial?: string;
 
-  @Prop() contact: string;
+  @Prop()
+  emailPersonal?: string;
 
-  @Prop() lastCurrentDesignation: string;
+  @Prop()
+  contact?: string;
 
-  @Prop({ type: [String] }) product: string[];
+  @Prop()
+ lastCurrentDesignation?: string;
 
-  @Prop({ default: 'pending' }) status: 'pending' | 'approved' | 'rejected';
+  // ✅ array of strings
+  @Prop({ type: [String], default: [] })
+  product?: string[];
 
-  @Prop({ default: null }) rejectionReason?: string; 
+  @Prop({ type: String, default: 'pending' })
+  status?: 'pending' | 'approved' | 'rejected';
+
+  @Prop({ type: String, default: null })
+  rejectionReason?: string | null;
 }
 
-export const BankerDirectoryReviewSchema = SchemaFactory.createForClass(BankerDirectoryReview);
+export const BankerDirectoryReviewSchema =
+  SchemaFactory.createForClass(BankerDirectoryReview);
