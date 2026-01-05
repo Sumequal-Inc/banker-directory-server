@@ -1,5 +1,6 @@
+// src/bank-directory/schemas/banker_directory_review.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 
 export type BankerDirectoryReviewDocument = BankerDirectoryReview & Document;
 
@@ -11,11 +12,9 @@ export class BankerDirectoryReview {
   @Prop()
   associatedWith?: string;
 
-  // ✅ frontend se string aa rahi hai (e.g. "Delhi, Uttar Pradesh")
   @Prop()
   state?: string;
 
-  // ✅ frontend se string aa rahi hai (e.g. "Noida, Ghaziabad")
   @Prop()
   city?: string;
 
@@ -29,9 +28,8 @@ export class BankerDirectoryReview {
   contact?: string;
 
   @Prop()
- lastCurrentDesignation?: string;
+  lastCurrentDesignation?: string;
 
-  // ✅ array of strings
   @Prop({ type: [String], default: [] })
   product?: string[];
 
@@ -40,6 +38,9 @@ export class BankerDirectoryReview {
 
   @Prop({ type: String, default: null })
   rejectionReason?: string | null;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  createdBy: Types.ObjectId;
 }
 
 export const BankerDirectoryReviewSchema =

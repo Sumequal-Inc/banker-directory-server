@@ -1,23 +1,31 @@
-
-// src/auth/auth.module.ts
+// src/auth/auth.module.ts (banker project)
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt-strategy';
+import { ConfigService } from '@nestjs/config';
 import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
-    PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'defaultsecret',
-      signOptions: { expiresIn: '1d' },
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService): JwtModuleOptions => ({
+        secret: config.get<string>('JWT_SECRET') || 'defaultsecret',
+        signOptions: {
+          expiresIn: (config.get('JWT_EXPIRES') || '1d') as any,
+        },
+      }),
     }),
+
     UserModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
+  exports: [JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}

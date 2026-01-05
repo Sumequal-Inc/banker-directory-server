@@ -29,6 +29,15 @@ export class BankerDirectory extends Document {
 
   @Prop({ required: false })
   lastCurrentDesignation?: string;
+
+    @Prop()
+  createdBy?: string;
+
+  @Prop()
+  createdByName?: string;
+
+  @Prop()
+  createdByEmail?: string;
 }
 
 export const BankerDirectorySchema = SchemaFactory.createForClass(BankerDirectory);
