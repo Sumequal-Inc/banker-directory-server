@@ -22,19 +22,23 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
     userPayload?._id ||
     userPayload?.id ||
     userPayload?.userId ||
-    userPayload?.sub ||
-    null;
+    userPayload?.sub;
+
+  console.log('🧩 requestReview createdBy =', createdBy);
+
+  if (!createdBy) {
+    throw new BadRequestException('User not identified from token');
+  }
 
   return this.reviewModel.create({
     ...dto,
     status: 'pending',
-
-    // ⭐ user identity stored
     createdBy,
     createdByName: userPayload?.name || null,
     createdByEmail: userPayload?.email || null,
   });
 }
+
 
   // ✅ 2. Admin: all review submissions (pending/approved/rejected)
   async getAllReviews() {
