@@ -154,30 +154,30 @@ async submitForReview(
     );
   }
 
-  // ✅ Logged-in user: apni review requests (pending + approved + rejected)
-  @Get('my-review-requests')
-  async getMyReviewRequests(@Req() req: Request) {
-    let user: any = null;
+@Get('my-review-requests')
+async getMyReviewRequests(@Req() req: Request) {
+  let user: any = null;
 
-    const authHeader = (req.headers['authorization'] ||
-      req.headers['Authorization']) as string | undefined;
+  const authHeader = (req.headers['authorization'] ||
+    req.headers['Authorization']) as string | undefined;
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.slice(7);
-      try {
-        user = this.jwtService.verify(token);
-      } catch (e: any) {
-        console.warn('JWT verify failed in /my-review-requests:', e?.message);
-      }
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7);
+    try {
+      user = this.jwtService.verify(token);   
+    } catch (e: any) {
+      console.warn('JWT verify failed in /my-review-requests:', e?.message);
     }
-
-    if (!user || !(user._id || user.id || user.sub)) {
-      throw new BadRequestException('User not identified from token');
-    }
-
-    const userId = user._id || user.id || user.sub;
-    return this.bankerDirectoryService.getMyReviews(userId);
   }
+
+  if (!user || !(user._id || user.id || user.sub)) {
+    throw new BadRequestException('User not identified from token'); 
+  }
+
+  const userId = user._id || user.id || user.sub;
+  return this.bankerDirectoryService.getMyReviews(userId);
+}
+
 
   // ✅ Logged-in user: apne approved bankers (live directory me jo gaye)
   @Get('my-approved')
