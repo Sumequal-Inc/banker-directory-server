@@ -15,7 +15,7 @@ import { AuthModule } from '../auth/auth.module'; // ✅ yahan se JwtService aay
     ]),
     AuthModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'change-me', // ✅ same secret jo login me use kar rahe ho
+      secret: process.env.JWT_SECRET || 'defaultsecret', 
       signOptions: { expiresIn: '7d' },
     }),
   ],
