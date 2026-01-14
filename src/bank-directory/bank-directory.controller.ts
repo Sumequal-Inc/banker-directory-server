@@ -5,7 +5,6 @@ import {
   Body,
   Param,
   Delete,
-  Put,
   Query,
   BadRequestException,
   UseInterceptors,
@@ -27,93 +26,85 @@ export class BankerDirectoryController {
     private readonly jwtService: JwtService,
   ) {}
 
- @Post('request-directory')
-async submitForReview(
-  @Body() dto: CreateBankerDirectoryDto,
-  @Req() req: Request,
-) {
-  let user: any = null;
-
-  const authHeader = (req.headers['authorization'] ||
-    req.headers['Authorization']) as string | undefined;
-
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7);
-    try {
-      user = this.jwtService.verify(token);
-    } catch (e: any) {
-      console.warn(
-        'JWT verify failed in /banker-directory/request-directory:',
-        e?.message,
-      );
-    }
+  // ✅ NEW: dropdown list
+  @Get('associated-options')
+  async getAssociatedOptions() {
+    return this.bankerDirectoryService.getAssociatedOptions();
   }
 
-  return await this.bankerDirectoryService.requestReview(dto, user);
-}
+  // ✅ NEW: upsert (auto add if not exists)
+  @Post('associated-options/upsert')
+  async upsertAssociated(@Body('name') name: string) {
+    if (!name?.trim()) {
+      throw new BadRequestException('name is required');
+    }
+    return this.bankerDirectoryService.upsertAssociatedOption(name);
+  }
 
+  @Post('request-directory')
+  async submitForReview(@Body() dto: CreateBankerDirectoryDto, @Req() req: Request) {
+    let user: any = null;
 
-  // ✅ Review counts (pending / approved / rejected)
+    const authHeader = (req.headers['authorization'] ||
+      req.headers['Authorization']) as string | undefined;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.slice(7);
+      try {
+        user = this.jwtService.verify(token);
+      } catch (e: any) {
+        console.warn('JWT verify failed in /request-directory:', e?.message);
+      }
+    }
+
+    return await this.bankerDirectoryService.requestReview(dto, user);
+  }
+
   @Get('review-counts')
   async getReviewCounts() {
     return await this.bankerDirectoryService.getReviewCounts();
   }
 
-  // ✅ Admin: all review submissions
   @Get('review-requests')
   async getAllSubmissions() {
     return await this.bankerDirectoryService.getAllReviews();
   }
 
-  // ✅ Admin: approve review
   @Post('approve-request/:id')
   async approve(@Param('id') id: string) {
     return await this.bankerDirectoryService.approveReview(id);
   }
 
-  // ✅ Admin: reject review
   @Post('reject-request/:id')
-  async reject(
-    @Param('id') id: string,
-    @Body('reason') reason: string,
-  ) {
+  async reject(@Param('id') id: string, @Body('reason') reason: string) {
     return await this.bankerDirectoryService.rejectReview(id, reason);
   }
 
-  // ✅ Manual create in main directory (admin)
   @Post('create-directories')
   async create(@Body() dto: CreateBankerDirectoryDto) {
     return await this.bankerDirectoryService.create(dto);
   }
 
-  // ✅ All directory entries (admin full list)
   @Get('get-directories')
   async findAll() {
     return await this.bankerDirectoryService.findAll();
   }
 
-  // ✅ Single directory entry
   @Get('get-directory/:id')
   async findOne(@Param('id') id: string) {
     return await this.bankerDirectoryService.findOne(id);
   }
 
-  // ✅ Update directory entry
   @Patch('update-directory/:id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateDto: UpdateBankerDirectoryDto,
-  ) {
+  async update(@Param('id') id: string, @Body() updateDto: UpdateBankerDirectoryDto) {
     return this.bankerDirectoryService.update(id, updateDto);
   }
 
-  // ✅ Delete directory entry
   @Delete('delete-directory/:id')
   async remove(@Param('id') id: string) {
     return await this.bankerDirectoryService.remove(id);
   }
 
-  // ✅ Filter listing (admin generic search)
   @Get('filter')
   async filter(
     @Query('state') state?: string,
@@ -137,13 +128,11 @@ async submitForReview(
     );
   }
 
-  // ✅ State-city meta
   @Get('state-city-meta')
   async getStateCityMeta() {
     return this.bankerDirectoryService.getStateCityMeta();
   }
 
-  // ✅ Bulk upload from Excel/CSV
   @Post('bulk-upload')
   @UseInterceptors(FileInterceptor('file'))
   async bulkUpload(@UploadedFile() file: Express.Multer.File) {
@@ -153,7 +142,6 @@ async submitForReview(
       file.originalname,
     );
   }
-
 @Get('my-review-requests')
 async getMyReviewRequests(@Req() req: Request) {
   let user: any = null;
@@ -202,5 +190,4 @@ async getMyReviewRequests(@Req() req: Request) {
 
     const userId = user._id || user.id || user.sub;
     return this.bankerDirectoryService.getMyApprovedBankers(userId);
-  }
-}
+  }}

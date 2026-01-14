@@ -41,6 +41,12 @@ export class BankerDirectoryReview {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
+
+  @Prop({ type: String, default: null })
+  createdByName?: string;
+
+  @Prop({ type: String, default: null })
+  createdByEmail?: string;
 }
 
 export const BankerDirectoryReviewSchema =

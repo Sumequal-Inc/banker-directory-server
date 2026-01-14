@@ -1,11 +1,19 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import * as XLSX from 'xlsx';
+
 import { BankerDirectory } from './schemas/bank-directory.schema';
+import { BankerDirectoryReview } from './schemas/banker_directory_review.schema';
 import { CreateBankerDirectoryDto } from './dto/create-bank-directory.dto';
 import { UpdateBankerDirectoryDto } from './dto/update-bank-directory.dto';
-import { BankerDirectoryReview } from './schemas/banker_directory_review.schema';
-import * as XLSX from 'xlsx';
+
+// ✅ NEW
+import { AssociatedOption } from './schemas/associated-option.schema';
 
 @Injectable()
 export class BankerDirectoryService {
@@ -15,64 +23,87 @@ export class BankerDirectoryService {
 
     @InjectModel(BankerDirectoryReview.name)
     private readonly reviewModel: Model<BankerDirectoryReview>,
+
+    // ✅ NEW
+    @InjectModel(AssociatedOption.name)
+    private readonly associatedModel: Model<AssociatedOption>,
   ) {}
 
-async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
-  const createdBy =
-    userPayload?._id ||
-    userPayload?.id ||
-    userPayload?.userId ||
-    userPayload?.sub;
-
-  console.log('🧩 requestReview createdBy =', createdBy);
-
-  if (!createdBy) {
-    throw new BadRequestException('User not identified from token');
+  // ✅ NEW: (1) Get options list for dropdown
+  async getAssociatedOptions() {
+    return this.associatedModel.find().sort({ name: 1 }).exec();
   }
 
-  return this.reviewModel.create({
-    ...dto,
-    status: 'pending',
-    createdBy,
-    createdByName: userPayload?.name || null,
-    createdByEmail: userPayload?.email || null,
-  });
-}
+  // ✅ NEW: (2) Upsert option (case-insensitive)
+  async upsertAssociatedOption(name: string) {
+    if (!name?.trim()) return null;
+    const clean = name.trim();
 
-
-  // ✅ 2. Admin: all review submissions (pending/approved/rejected)
-  async getAllReviews() {
-    return this.reviewModel.find().sort({ createdAt: -1 }).exec();
+    return this.associatedModel.findOneAndUpdate(
+      { name: { $regex: `^${clean}$`, $options: 'i' } },
+      { $setOnInsert: { name: clean } },
+      { upsert: true, new: true },
+    );
   }
 
-  // ✅ 3. Admin: approve request → move to main table
-  async approveReview(id: string) {
-    const review = await this.reviewModel.findById(id);
-    if (!review) {
-      throw new NotFoundException('Review not found');
+  // ✅ Request Review (User)
+  async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
+    const createdByRaw =
+      userPayload?._id || userPayload?.id || userPayload?.userId || userPayload?.sub;
+
+    if (!createdByRaw) {
+      throw new BadRequestException('User not identified from token');
     }
 
-    // TS error avoid – toObject ko any treat karo
+    const createdBy = new Types.ObjectId(String(createdByRaw));
+
+    // ✅ AUTO SAVE associatedWith (user typed)
+    if (dto?.associatedWith) {
+      await this.upsertAssociatedOption(dto.associatedWith);
+    }
+
+    return this.reviewModel.create({
+      ...dto,
+      status: 'pending',
+      createdBy,
+      createdByName: userPayload?.fullName || null,
+      createdByEmail: userPayload?.email || null,
+    });
+  }
+
+  async getAllReviews() {
+    return this.reviewModel
+      .find()
+      .populate('createdBy', 'fullName email role')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  // ✅ Approve Review → move to main table
+  async approveReview(id: string) {
+    const review = await this.reviewModel.findById(id);
+    if (!review) throw new NotFoundException('Review not found');
+
+    // ✅ AUTO SAVE associatedWith on approve too
+    if ((review as any).associatedWith) {
+      await this.upsertAssociatedOption((review as any).associatedWith);
+    }
+
     const obj: any = review.toObject();
     delete obj._id;
     delete obj.__v;
     delete obj.createdAt;
     delete obj.updatedAt;
 
-    // obj me bankerName, associatedWith, state, city, product, createdBy... sab hai
     const approved = await this.bankerDirectoryModel.create(obj);
-
     await this.reviewModel.findByIdAndUpdate(id, { status: 'approved' });
 
     return approved;
   }
 
-  // ✅ 4. Admin: reject request – reason store karo
   async rejectReview(id: string, reason: string) {
     const review = await this.reviewModel.findById(id);
-    if (!review) {
-      throw new NotFoundException('Review not found');
-    }
+    if (!review) throw new NotFoundException('Review not found');
 
     review.status = 'rejected';
     (review as any).rejectionReason = reason;
@@ -81,18 +112,21 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
     return { message: 'Submission rejected successfully', reason };
   }
 
-  // ✅ 5. Main table: manual create (admin / internal use)
-  async create(createBankerDirectoryDto: CreateBankerDirectoryDto): Promise<BankerDirectory> {
-    const createdBankerDirectory = new this.bankerDirectoryModel(createBankerDirectoryDto);
-    return await createdBankerDirectory.save();
+  // ✅ Manual create (Admin)
+  async create(createDto: CreateBankerDirectoryDto): Promise<BankerDirectory> {
+    // ✅ AUTO SAVE associatedWith (admin typed)
+    if (createDto?.associatedWith) {
+      await this.upsertAssociatedOption(createDto.associatedWith);
+    }
+
+    const created = new this.bankerDirectoryModel(createDto);
+    return await created.save();
   }
 
-  // ✅ 6. Get all live directory entries
   async findAll(): Promise<BankerDirectory[]> {
     return await this.bankerDirectoryModel.find().exec();
   }
 
-  // ✅ 7. Get one by ID
   async findOne(id: string): Promise<BankerDirectory> {
     const bankerDirectory = await this.bankerDirectoryModel.findById(id).exec();
     if (!bankerDirectory) {
@@ -101,23 +135,25 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
     return bankerDirectory;
   }
 
-  // ✅ 8. Update main directory entry
-  async update(id: string, updateBankerDirectoryDto: UpdateBankerDirectoryDto) {
+  async update(id: string, updateDto: UpdateBankerDirectoryDto) {
+    // ✅ if updated associatedWith then also auto save option
+    if ((updateDto as any)?.associatedWith) {
+      await this.upsertAssociatedOption((updateDto as any).associatedWith);
+    }
+
     return this.bankerDirectoryModel
-      .findByIdAndUpdate(id, updateBankerDirectoryDto, { new: true })
+      .findByIdAndUpdate(id, updateDto, { new: true })
       .exec();
   }
 
-  // ✅ 9. Delete from main directory
   async remove(id: string): Promise<BankerDirectory> {
-    const deletedBankerDirectory = await this.bankerDirectoryModel.findByIdAndDelete(id).exec();
-    if (!deletedBankerDirectory) {
+    const deleted = await this.bankerDirectoryModel.findByIdAndDelete(id).exec();
+    if (!deleted) {
       throw new NotFoundException(`Banker Directory with ID ${id} not found`);
     }
-    return deletedBankerDirectory;
+    return deleted;
   }
 
-  // ✅ 10. Filter (admin side listing + generic search)
   async filterByLocationAndName(
     state?: string,
     city?: string,
@@ -130,29 +166,12 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
   ): Promise<{ data: BankerDirectory[]; totalCount: number }> {
     const query: any = {};
 
-    if (state) {
-      query.state = { $regex: state, $options: 'i' };
-    }
-
-    if (city) {
-      query.city = { $regex: city, $options: 'i' };
-    }
-
-    if (bankerName) {
-      query.bankerName = new RegExp(bankerName, 'i');
-    }
-
-    if (associatedWith) {
-      query.associatedWith = new RegExp(associatedWith, 'i');
-    }
-
-    if (emailOfficial) {
-      query.emailOfficial = new RegExp(emailOfficial, 'i');
-    }
-
-    if (emailPersonal) {
-      query.emailPersonal = new RegExp(emailPersonal, 'i');
-    }
+    if (state) query.state = { $regex: state, $options: 'i' };
+    if (city) query.city = { $regex: city, $options: 'i' };
+    if (bankerName) query.bankerName = new RegExp(bankerName, 'i');
+    if (associatedWith) query.associatedWith = new RegExp(associatedWith, 'i');
+    if (emailOfficial) query.emailOfficial = new RegExp(emailOfficial, 'i');
+    if (emailPersonal) query.emailPersonal = new RegExp(emailPersonal, 'i');
 
     const skip = (page - 1) * limit;
 
@@ -164,7 +183,6 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
     return { data, totalCount };
   }
 
-  // ✅ 11. State–City meta for filters
   async getStateCityMeta() {
     const rawStates: string[] = await this.bankerDirectoryModel.distinct('state').exec();
 
@@ -193,7 +211,6 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
     return { states, stateCityMap };
   }
 
-  // ✅ 12. Review counts for dashboard summaries
   async getReviewCounts() {
     const [pending, approved, rejected] = await Promise.all([
       this.reviewModel.countDocuments({ status: 'pending' }),
@@ -204,7 +221,6 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
     return { pending, approved, rejected };
   }
 
-  // ✅ 13. Bulk import / upsert from Excel / CSV
   async bulkImportFromBuffer(buf: Buffer, filename: string) {
     let workbook: XLSX.WorkBook;
     try {
@@ -242,6 +258,7 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
       const emailOfficial = String(r.emailOfficial || r.EmailOfficial || '').trim();
       const emailPersonal = String(r.emailPersonal || r.EmailPersonal || '').trim();
       const contact = String(r.contact || r.Contact || '').trim();
+      const alternateNumber = String(r.alternateNumber || r.AlternateNumber || '').trim();
 
       const state = String(r.state || r.State || '').trim();
       const city = String(r.city || r.City || '').trim();
@@ -257,6 +274,9 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
         continue;
       }
 
+      // ✅ AUTO SAVE associatedWith from bulk upload also
+      await this.upsertAssociatedOption(associatedWith);
+
       const filter: any = emailOfficial
         ? { emailOfficial }
         : { bankerName, associatedWith, contact };
@@ -267,6 +287,7 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
         emailOfficial,
         emailPersonal,
         contact,
+        alternateNumber,
         state,
         city,
         product,
@@ -296,16 +317,15 @@ async requestReview(dto: CreateBankerDirectoryDto, userPayload?: any) {
   async getMyReviews(userId: string) {
     return this.reviewModel
       .find({ createdBy: userId })
+      .populate('createdBy', 'name email role')
       .sort({ createdAt: -1 })
       .exec();
   }
 
-  // ✅ 15. Sirf iss user ke approved live directory entries
   async getMyApprovedBankers(userId: string) {
     return this.bankerDirectoryModel
       .find({ createdBy: userId })
       .sort({ createdAt: -1 })
       .exec();
   }
-  
 }
