@@ -6,12 +6,16 @@ import { BankerDirectory, BankerDirectorySchema } from './schemas/bank-directory
 import { BankerDirectoryReview, BankerDirectoryReviewSchema } from './schemas/banker_directory_review.schema';
 import { JwtModule } from '@nestjs/jwt'; // ✅ yeh add karo
 import { AuthModule } from '../auth/auth.module'; // ✅ yahan se JwtService aayega
+import { AssociatedOption, AssociatedOptionSchema } from './schemas/associated-option.schema';
+
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: BankerDirectory.name, schema: BankerDirectorySchema },
       { name: BankerDirectoryReview.name, schema: BankerDirectoryReviewSchema },
+            { name: AssociatedOption.name, schema: AssociatedOptionSchema },
+
     ]),
     AuthModule,
     JwtModule.register({
