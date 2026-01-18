@@ -9,10 +9,16 @@ export class UpdateBankerDirectoryDto {
   @IsString()
   associatedWith?: string;
 
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  locationCategories?: string[];
+ @IsOptional()
+@IsArray()
+@IsString({ each: true })
+state?: string[];
+
+@IsOptional()
+@IsArray()
+@IsString({ each: true })
+city?: string[];
+
 
   @IsOptional()
   @IsString()
@@ -25,6 +31,9 @@ export class UpdateBankerDirectoryDto {
   @IsOptional()
   contact?: string;
 
-  @IsOptional()
-  product?: string;
+@IsOptional()
+@IsArray()
+@IsString({ each: true })
+product?: string[];
+
 }
