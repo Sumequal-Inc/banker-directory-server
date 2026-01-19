@@ -7,7 +7,7 @@ export class UpdateBankerDirectoryDto {
 
   @IsOptional()
   @IsString()
-  associatedWith?: string;
+  associatedWith?: string;//changes
 
  @IsOptional()
 @IsArray()
