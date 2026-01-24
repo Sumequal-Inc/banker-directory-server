@@ -11,8 +11,6 @@ import { BankerDirectory } from './schemas/bank-directory.schema';
 import { BankerDirectoryReview } from './schemas/banker_directory_review.schema';
 import { CreateBankerDirectoryDto } from './dto/create-bank-directory.dto';
 import { UpdateBankerDirectoryDto } from './dto/update-bank-directory.dto';
-
-// ✅ NEW
 import { AssociatedOption } from './schemas/associated-option.schema';
 
 @Injectable()
@@ -327,5 +325,115 @@ export class BankerDirectoryService {
       .find({ createdBy: userId })
       .sort({ createdAt: -1 })
       .exec();
+  }
+
+  async getUserCollectionsSummary(params?: {
+    search?: string;
+    page?: number;
+    limit?: number;
+    sort?: 'coins' | 'approved' | 'recent';
+  }) {
+    const page = Math.max(1, Number(params?.page || 1));
+    const limit = Math.min(100, Math.max(5, Number(params?.limit || 10)));
+    const skip = (page - 1) * limit;
+
+    const search = String(params?.search || '').trim();
+    const sort = (params?.sort || 'coins') as 'coins' | 'approved' | 'recent';
+
+    // ✅ rule
+    const COINS_PER_APPROVED = 1;
+    const COINS_TO_RUPEE_DIVISOR = 100;
+
+    const match: any = {};
+
+    if (search) {
+      match.$or = [
+        { createdByName: { $regex: search, $options: 'i' } },
+        { createdByEmail: { $regex: search, $options: 'i' } },
+        { createdBy: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const sortStage =
+      sort === 'recent'
+        ? { lastActivityAt: -1 }
+        : sort === 'approved'
+        ? { approvedLeads: -1 }
+        : { coins: -1 };
+
+    const pipeline: any[] = [
+      { $match: match },
+
+      {
+        $group: {
+          _id: '$createdBy',
+          name: { $first: '$createdByName' },
+          email: { $first: '$createdByEmail' },
+
+          totalLeads: { $sum: 1 },
+          approvedLeads: {
+            $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] },
+          },
+          pendingLeads: {
+            $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] },
+          },
+          rejectedLeads: {
+            $sum: { $cond: [{ $eq: ['$status', 'rejected'] }, 1, 0] },
+          },
+
+          lastActivityAt: { $max: '$updatedAt' },
+        },
+      },
+
+      {
+        $addFields: {
+          userId: { $toString: '$_id' },
+          coins: { $multiply: ['$approvedLeads', COINS_PER_APPROVED] },
+          rupees: {
+            $divide: [
+              { $multiply: ['$approvedLeads', COINS_PER_APPROVED] },
+              COINS_TO_RUPEE_DIVISOR,
+            ],
+          },
+        },
+      },
+
+      { $sort: sortStage },
+
+      // facet: data + totals + total count
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          meta: [{ $count: 'totalUsers' }],
+          totals: [
+            {
+              $group: {
+                _id: null,
+                totalCoins: { $sum: '$coins' },
+                totalRupees: { $sum: '$rupees' },
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const agg = await this.reviewModel.aggregate(pipeline).exec();
+    const first = agg?.[0] || {};
+
+    const data = first.data || [];
+    const totalUsers = first.meta?.[0]?.totalUsers || 0;
+    const totalCoins = first.totals?.[0]?.totalCoins || 0;
+    const totalRupees = first.totals?.[0]?.totalRupees || 0;
+
+    return {
+      page,
+      limit,
+      totalUsers,
+      totalCoins,
+      totalRupees,
+      rule: { approvedToCoin: 1, coinToRupee: 100 },
+      data,
+    };
   }
 }
