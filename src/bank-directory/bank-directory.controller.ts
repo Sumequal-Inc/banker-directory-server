@@ -142,30 +142,30 @@ export class BankerDirectoryController {
       file.originalname,
     );
   }
-@Get('my-review-requests')
-async getMyReviewRequests(@Req() req: Request) {
-  let user: any = null;
 
-  const authHeader = (req.headers['authorization'] ||
-    req.headers['Authorization']) as string | undefined;
+  @Get('my-review-requests')
+  async getMyReviewRequests(@Req() req: Request) {
+    let user: any = null;
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7);
-    try {
-      user = this.jwtService.verify(token);   
-    } catch (e: any) {
-      console.warn('JWT verify failed in /my-review-requests:', e?.message);
+    const authHeader = (req.headers['authorization'] ||
+      req.headers['Authorization']) as string | undefined;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.slice(7);
+      try {
+        user = this.jwtService.verify(token);
+      } catch (e: any) {
+        console.warn('JWT verify failed in /my-review-requests:', e?.message);
+      }
     }
+
+    if (!user || !(user._id || user.id || user.sub)) {
+      throw new BadRequestException('User not identified from token');
+    }
+
+    const userId = user._id || user.id || user.sub;
+    return this.bankerDirectoryService.getMyReviews(userId);
   }
-
-  if (!user || !(user._id || user.id || user.sub)) {
-    throw new BadRequestException('User not identified from token'); 
-  }
-
-  const userId = user._id || user.id || user.sub;
-  return this.bankerDirectoryService.getMyReviews(userId);
-}
-
 
   // ✅ Logged-in user: apne approved bankers (live directory me jo gaye)
   @Get('my-approved')
@@ -190,4 +190,20 @@ async getMyReviewRequests(@Req() req: Request) {
 
     const userId = user._id || user.id || user.sub;
     return this.bankerDirectoryService.getMyApprovedBankers(userId);
-  }}
+  }
+
+  @Get('user-collections')
+  async getUserCollections(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('sort') sort?: 'coins' | 'approved' | 'recent',
+  ) {
+    return this.bankerDirectoryService.getUserCollectionsSummary({
+      search,
+      page: Number(page || 1),
+      limit: Number(limit || 10),
+      sort: (sort as any) || 'coins',
+    });
+  }
+}
