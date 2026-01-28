@@ -11,6 +11,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -43,6 +44,7 @@ export class AuthController {
     redirectTo: string;
   }> {
     const { email, password, role, fullName, gender } = createDto;
+
     const { access_token } = await this.authService.signup(
       email,
       password,
@@ -60,23 +62,19 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-  async forgotPassword(
-    @Body('email') email: string,
-  ): Promise<{ message: string }> {
-    try {
-      const result = await this.authService.sendResetPasswordEmail(email);
-      return { message: result };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Unexpected error');
-    }
+  async forgotPassword(@Body() body: ForgotPasswordDto): Promise<{ message: string }> {
+    const msg = await this.authService.sendResetPasswordEmail(body.email);
+    return { message: msg };
   }
 
+  // ✅ reset with token + email in query
   @Post('reset-password')
   async resetPassword(
     @Query('token') token: string,
+    @Query('email') email: string,
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<{ message: string }> {
-    await this.authService.resetPassword(resetPasswordDto, token);
+    await this.authService.resetPassword(resetPasswordDto, token, email);
     return { message: 'Password reset successful' };
   }
 
