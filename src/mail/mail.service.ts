@@ -20,7 +20,6 @@ export class MailService {
 
   async sendResetLink(to: string, link: string) {
     const from = process.env.MAIL_FROM || process.env.MAIL_USER || '';
-
     await this.transporter.sendMail({
       from,
       to,
