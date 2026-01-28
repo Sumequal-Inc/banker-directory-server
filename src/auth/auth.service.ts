@@ -97,7 +97,10 @@ export class AuthService {
 
     
     const base =
-      process.env.RESET_PASSWORD_URL;
+      process.env.RESET_PASSWORD_URL ||
+      process.env.BROKER_APP_URL ||
+      'https://brokerf2.netlify.app';
+
     const link = `${base}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 
     await this.mailService.sendResetLink(email, link);
