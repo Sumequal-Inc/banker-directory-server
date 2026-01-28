@@ -32,6 +32,11 @@ export class UserService {
     return this.userModel.findOne({ email: normalized }).select('+password');
   }
 
+    async findByEmailBasic(email: string): Promise<UserDocument | null> {
+    const normalized = (email || '').trim().toLowerCase();
+    return this.userModel.findOne({ email: normalized });
+  }
+
    async findAll(): Promise<User[]> {
     return this.userModel.find();
   }
