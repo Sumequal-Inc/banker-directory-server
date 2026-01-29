@@ -20,9 +20,12 @@ export class AuthService {
   private LOCK_MS = 15 * 60 * 1000; 
   private RESET_PEPPER = process.env.RESET_TOKEN_PEPPER || 'change_this_reset_pepper';
 
-  private normalizeEmail(email: string) {
-    return (email || '').trim().toLowerCase();
-  }
+ private normalizeEmail(email: string) {
+  const raw = (email || '').trim();
+  const decoded = decodeURIComponent(raw); // ✅ important
+  return decoded.toLowerCase();
+}
+
 
   private tokenToHash(email: string, token: string) {
     const data = `${this.normalizeEmail(email)}:${token}:${this.RESET_PEPPER}`;
@@ -101,7 +104,7 @@ export class AuthService {
       process.env.BROKER_APP_URL ||
       'https://brokerf2.netlify.app';
 
-    const link = `${base}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+    const link = `${base}/?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 
     await this.mailService.sendResetLink(email, link);
 
