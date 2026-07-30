@@ -10,6 +10,7 @@ async function bootstrap() {
     'https://www.connectbankers.com',
     'https://brokerf2.netlify.app',
     'https://banker.f2fintech.in',
+    'https://f2fintechbanker-directory.netlify.app',
     'http://localhost:3000',
   ];
 
